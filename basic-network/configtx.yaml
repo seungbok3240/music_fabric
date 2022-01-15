@@ -1,0 +1,62 @@
+# genesis block, channel, anchor peer
+
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererOrg
+    MSPDir: crypto-config/ordererOrganizations/stream.com/msp
+
+  - &Sales1Org
+    Name: Sales1Org
+    ID: Sales1Org
+    MSPDir: crypto-config/peerOrganizations/sales1.stream.com/msp
+    AnchorPeers:
+      - Host: peer0.sales1.stream.com
+        Port: 7051
+
+  - &CustomerOrg
+    Name: CustomerOrg
+    ID: CustomerOrg
+    MSPDir: crypto-config/peerOrganizations/customer.stream.com/msp
+    AnchorPeers:
+      - Host: peer0.customer.stream.com
+        Port: 7051
+
+Orderer: &OrdererDefaults
+  OrdererType: solo
+  Addresses:
+    - orderer.stream.com:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  
+  kafka:
+    Brokers:
+      - 127.0.0.1:9092
+
+  Organizations:
+
+Application: &ApplicationDefaults
+  Organizations:
+
+Profiles:
+  OrdererGenesis:
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+    Consortiums:
+      SampleConsortium:
+        Organizations:
+          - *Sales1Org
+          - *CustomerOrg
+
+  Channel1:
+    Consortium: SampleConsortium
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Sales1Org
+        - *CustomerOrg
